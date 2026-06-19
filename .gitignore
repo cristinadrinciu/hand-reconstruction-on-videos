@@ -1,0 +1,35 @@
+# Datasets and third-party pipelines -- obtain separately (see README)
+datasets/
+WiLoR/
+HaPTIC/
+manopth/
+
+# LaTeX source -- only the compiled thesis.pdf is tracked
+thesis/
+
+# Superseded / working files
+scripts/
+CONTEXT.md
+.claude/
+
+# Test inputs and outputs (large; final figures are in the thesis)
+thesis_tests/
+video_frames_*/
+test*_frames/
+rezultate_*/
+rezultate_json/
+*.mp4
+trajectory_plot.png
+pred_*.json
+bboxes*.json
+*.npz
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Logs and temp
+*.log
+*.bak
