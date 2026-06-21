@@ -10,6 +10,15 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+plt.rcParams.update({
+    "font.size": 13,
+    "axes.titlesize": 14,
+    "axes.labelsize": 13,
+    "xtick.labelsize": 12,
+    "ytick.labelsize": 12,
+    "legend.fontsize": 12,
+})
+
 HO3D = "datasets/HO3D"
 FIGDIR = "thesis/figures"
 os.makedirs(FIGDIR, exist_ok=True)
@@ -48,6 +57,7 @@ for m, f in FILES.items():
 # ---------------------------------------------------------------- per-sequence PA-MPJPE
 print("per-sequence PA-MPJPE...")
 seq_pa = {m: [] for m in FILES}
+seq_sem = {m: [] for m in FILES}          # standard error of the mean, per sequence
 seq_labels = list(by_seq.keys())
 for s, idxs in by_seq.items():
     G = GT[idxs]
@@ -57,7 +67,9 @@ for s, idxs in by_seq.items():
         for k in range(len(P)):
             Pa = similarity_transform(P[k], G[k])
             errs.append(np.linalg.norm(Pa - G[k], axis=-1).mean())
-        seq_pa[m].append(np.mean(errs) * 1000)
+        errs = np.asarray(errs) * 1000
+        seq_pa[m].append(errs.mean())
+        seq_sem[m].append(errs.std(ddof=1) / np.sqrt(len(errs)))
 
 # pick the feature sequence = largest GT wrist-depth range (most motion in depth)
 wrist_ranges = {s: (GT[idxs][:, 0, 2].max() - GT[idxs][:, 0, 2].min()) for s, idxs in by_seq.items()}
@@ -97,35 +109,40 @@ for i, m in enumerate(FILES):
 fig.tight_layout(); fig.savefig(f"{FIGDIR}/ho3d_bars_traj.png", dpi=160); plt.close(fig)
 
 # ================================================================ FIG 3: per-seq PA-MPJPE
-fig, ax = plt.subplots(figsize=(8.2, 3.8))
+fig, ax = plt.subplots(figsize=(11.0, 5.0))
 x = np.arange(len(seq_labels))
+wb = 0.27
 for i, m in enumerate(FILES):
-    ax.bar(x + (i - 1) * w, seq_pa[m], w, label=m, color=COL[m])
-ax.set_xticks(x); ax.set_xticklabels(seq_labels, rotation=45, ha="right", fontsize=8)
+    ax.bar(x + (i - 1) * wb, seq_pa[m], wb, label=m, color=COL[m],
+           yerr=seq_sem[m], capsize=3,
+           error_kw=dict(ecolor="#333333", elinewidth=1.0, capthick=1.0))
+ax.set_xticks(x); ax.set_xticklabels(seq_labels, rotation=45, ha="right")
 ax.set_ylabel("PA-MPJPE (mm)")
-ax.set_title("Per-sequence pose accuracy")
-ax.legend(frameon=False)
-fig.tight_layout(); fig.savefig(f"{FIGDIR}/ho3d_perseq_pampjpe.png", dpi=160); plt.close(fig)
+ax.set_xlabel("HO3D-v2 evaluation sequence")
+ax.set_title("Per-sequence pose accuracy (error bars: standard error of the mean)")
+ax.legend(frameon=True, framealpha=0.95, edgecolor="0.8", loc="upper left")
+ax.grid(axis="y", alpha=0.3)
+fig.tight_layout(); fig.savefig(f"{FIGDIR}/ho3d_perseq_pampjpe.png", dpi=170); plt.close(fig)
 
 # ================================================================ FIG 4: depth over time
 idxs = by_seq[feat]
 fr = np.arange(len(idxs))
-fig, ax = plt.subplots(figsize=(8.2, 3.8))
-ax.plot(fr, -GT[idxs][:, 0, 2], color=COL["GT"], lw=2.0, ls="--", label="Ground truth")
+fig, ax = plt.subplots(figsize=(10.0, 4.6))
+ax.plot(fr, -GT[idxs][:, 0, 2], color=COL["GT"], lw=2.2, ls="--", label="Ground truth")
 for m in FILES:
-    ax.plot(fr, -preds[m][idxs][:, 0, 2], color=COL[m], lw=1.1, label=m, alpha=0.9)
-ax.set_xlabel(f"frame (sequence {feat})"); ax.set_ylabel("wrist depth  $-z$  (m)")
+    ax.plot(fr, -preds[m][idxs][:, 0, 2], color=COL[m], lw=1.4, label=m, alpha=0.9)
+ax.set_xlabel(f"frame index (sequence {feat})"); ax.set_ylabel("wrist depth  $-z$  (m)")
 ax.set_title("Wrist depth over time")
 ax.legend(frameon=False, ncol=2)
 fig.tight_layout(); fig.savefig(f"{FIGDIR}/ho3d_depth_{feat}.png", dpi=160); plt.close(fig)
 
 # ================================================================ FIG 5: jitter over time
-fig, ax = plt.subplots(figsize=(8.2, 3.6))
+fig, ax = plt.subplots(figsize=(10.0, 4.4))
 for m in FILES:
     P = preds[m][idxs]
     acc = np.linalg.norm(P[2:] - 2 * P[1:-1] + P[:-2], axis=-1).mean(-1) * 1000  # per-frame mm
-    ax.plot(np.arange(1, len(P) - 1), acc, color=COL[m], lw=0.9, label=m, alpha=0.85)
-ax.set_xlabel(f"frame (sequence {feat})"); ax.set_ylabel("acceleration magnitude (mm)")
+    ax.plot(np.arange(1, len(P) - 1), acc, color=COL[m], lw=1.1, label=m, alpha=0.85)
+ax.set_xlabel(f"frame index (sequence {feat})"); ax.set_ylabel("acceleration magnitude (mm)")
 ax.set_title("Per-frame jitter (acceleration; lower = smoother)")
 ax.legend(frameon=False)
 fig.tight_layout(); fig.savefig(f"{FIGDIR}/ho3d_jitter_{feat}.png", dpi=160); plt.close(fig)
