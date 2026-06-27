@@ -19,6 +19,7 @@ test*_frames/
 rezultate_*/
 rezultate_json/
 *.mp4
+!demo_videos/*.mp4
 trajectory_plot.png
 pred_*.json
 bboxes*.json

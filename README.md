@@ -31,6 +31,7 @@ pipeline/          The hybrid pipeline (the contribution of this thesis)
   composition.py     scale, place, render (PyTorch3D), write outputs
   schemas.py         Pydantic contract for the Stage 1 -> Stage 2 JSON
 experiments/       HO3D evaluation, ablation, timing and plotting scripts
+demo_videos/       Rendered pipeline outputs for the seven test scenarios
 HO3D_RESULTS.md    All quantitative results (per-frame, trajectory, timing, ablation)
 Licenta_Cristina_Drinciu.pdf   The written thesis (PDF)
 requirements-wilor.txt   Stage 1 dependencies (wilor_env)
