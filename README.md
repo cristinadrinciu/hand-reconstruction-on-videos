@@ -32,7 +32,7 @@ pipeline/          The hybrid pipeline (the contribution of this thesis)
   schemas.py         Pydantic contract for the Stage 1 -> Stage 2 JSON
 experiments/       HO3D evaluation, ablation, timing and plotting scripts
 HO3D_RESULTS.md    All quantitative results (per-frame, trajectory, timing, ablation)
-thesis.pdf         The written thesis (PDF)
+Licenta_Cristina_Drinciu.pdf   The written thesis (PDF)
 requirements-wilor.txt   Stage 1 dependencies (wilor_env)
 requirements-haptic.txt  Stage 2 dependencies (haptic_env)
 ```
